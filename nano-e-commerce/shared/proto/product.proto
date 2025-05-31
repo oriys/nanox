@@ -1,0 +1,257 @@
+syntax = "proto3";
+
+package product;
+
+option go_package = "./product";
+
+// 商品服务定义
+service ProductService {
+  // 商品管理
+  rpc CreateProduct(CreateProductRequest) returns (CreateProductResponse);
+  rpc GetProduct(GetProductRequest) returns (GetProductResponse);
+  rpc UpdateProduct(UpdateProductRequest) returns (UpdateProductResponse);
+  rpc DeleteProduct(DeleteProductRequest) returns (DeleteProductResponse);
+  rpc ListProducts(ListProductsRequest) returns (ListProductsResponse);
+  rpc SearchProducts(SearchProductsRequest) returns (SearchProductsResponse);
+  
+  // 分类管理
+  rpc CreateCategory(CreateCategoryRequest) returns (CreateCategoryResponse);
+  rpc GetCategories(GetCategoriesRequest) returns (GetCategoriesResponse);
+  rpc UpdateCategory(UpdateCategoryRequest) returns (UpdateCategoryResponse);
+  rpc DeleteCategory(DeleteCategoryRequest) returns (DeleteCategoryResponse);
+  
+  // 库存管理
+  rpc UpdateStock(UpdateStockRequest) returns (UpdateStockResponse);
+  rpc CheckStock(CheckStockRequest) returns (CheckStockResponse);
+  rpc ReserveStock(ReserveStockRequest) returns (ReserveStockResponse);
+  rpc ReleaseStock(ReleaseStockRequest) returns (ReleaseStockResponse);
+}
+
+// 商品信息
+message Product {
+  int64 id = 1;
+  string name = 2;
+  string description = 3;
+  repeated string images = 4;
+  int64 price = 5; // 价格，单位：分
+  int64 category_id = 6;
+  int64 store_id = 7;
+  int32 stock = 8;
+  string status = 9; // active, inactive, deleted
+  map<string, string> attributes = 10; // 商品属性
+  int64 created_at = 11;
+  int64 updated_at = 12;
+}
+
+// 分类信息
+message Category {
+  int64 id = 1;
+  string name = 2;
+  string description = 3;
+  int64 parent_id = 4;
+  string image = 5;
+  int32 sort_order = 6;
+  string status = 7; // active, inactive
+  int64 created_at = 8;
+  int64 updated_at = 9;
+}
+
+// 创建商品请求
+message CreateProductRequest {
+  string name = 1;
+  string description = 2;
+  repeated string images = 3;
+  int64 price = 4;
+  int64 category_id = 5;
+  int64 store_id = 6;
+  int32 stock = 7;
+  map<string, string> attributes = 8;
+}
+
+message CreateProductResponse {
+  bool success = 1;
+  string message = 2;
+  Product product = 3;
+}
+
+// 获取商品请求
+message GetProductRequest {
+  int64 product_id = 1;
+}
+
+message GetProductResponse {
+  bool success = 1;
+  string message = 2;
+  Product product = 3;
+}
+
+// 更新商品请求
+message UpdateProductRequest {
+  int64 product_id = 1;
+  string name = 2;
+  string description = 3;
+  repeated string images = 4;
+  int64 price = 5;
+  int64 category_id = 6;
+  int32 stock = 7;
+  string status = 8;
+  map<string, string> attributes = 9;
+}
+
+message UpdateProductResponse {
+  bool success = 1;
+  string message = 2;
+  Product product = 3;
+}
+
+// 删除商品请求
+message DeleteProductRequest {
+  int64 product_id = 1;
+  int64 store_id = 2;
+}
+
+message DeleteProductResponse {
+  bool success = 1;
+  string message = 2;
+}
+
+// 商品列表请求
+message ListProductsRequest {
+  int32 page = 1;
+  int32 page_size = 2;
+  int64 category_id = 3;
+  int64 store_id = 4;
+  string status = 5;
+  string sort_by = 6; // price, created_at, name
+  string sort_order = 7; // asc, desc
+}
+
+message ListProductsResponse {
+  bool success = 1;
+  string message = 2;
+  repeated Product products = 3;
+  int32 total = 4;
+  int32 page = 5;
+  int32 page_size = 6;
+}
+
+// 搜索商品请求
+message SearchProductsRequest {
+  string keyword = 1;
+  int32 page = 2;
+  int32 page_size = 3;
+  int64 category_id = 4;
+  int64 min_price = 5;
+  int64 max_price = 6;
+  string sort_by = 7;
+  string sort_order = 8;
+}
+
+message SearchProductsResponse {
+  bool success = 1;
+  string message = 2;
+  repeated Product products = 3;
+  int32 total = 4;
+  int32 page = 5;
+  int32 page_size = 6;
+}
+
+// 创建分类请求
+message CreateCategoryRequest {
+  string name = 1;
+  string description = 2;
+  int64 parent_id = 3;
+  string image = 4;
+  int32 sort_order = 5;
+}
+
+message CreateCategoryResponse {
+  bool success = 1;
+  string message = 2;
+  Category category = 3;
+}
+
+// 获取分类列表请求
+message GetCategoriesRequest {
+  int64 parent_id = 1; // 0表示根分类
+}
+
+message GetCategoriesResponse {
+  bool success = 1;
+  string message = 2;
+  repeated Category categories = 3;
+}
+
+// 更新分类请求
+message UpdateCategoryRequest {
+  int64 category_id = 1;
+  string name = 2;
+  string description = 3;
+  string image = 4;
+  int32 sort_order = 5;
+  string status = 6;
+}
+
+message UpdateCategoryResponse {
+  bool success = 1;
+  string message = 2;
+  Category category = 3;
+}
+
+// 删除分类请求
+message DeleteCategoryRequest {
+  int64 category_id = 1;
+}
+
+message DeleteCategoryResponse {
+  bool success = 1;
+  string message = 2;
+}
+
+// 更新库存请求
+message UpdateStockRequest {
+  int64 product_id = 1;
+  int32 quantity = 2; // 正数增加，负数减少
+  string reason = 3; // 变更原因
+}
+
+message UpdateStockResponse {
+  bool success = 1;
+  string message = 2;
+  int32 current_stock = 3;
+}
+
+// 检查库存请求
+message CheckStockRequest {
+  int64 product_id = 1;
+  int32 quantity = 2;
+}
+
+message CheckStockResponse {
+  bool available = 1;
+  int32 current_stock = 2;
+  string message = 3;
+}
+
+// 预留库存请求
+message ReserveStockRequest {
+  int64 product_id = 1;
+  int32 quantity = 2;
+  string order_id = 3;
+}
+
+message ReserveStockResponse {
+  bool success = 1;
+  string message = 2;
+  string reservation_id = 3;
+}
+
+// 释放库存请求
+message ReleaseStockRequest {
+  string reservation_id = 1;
+}
+
+message ReleaseStockResponse {
+  bool success = 1;
+  string message = 2;
+}

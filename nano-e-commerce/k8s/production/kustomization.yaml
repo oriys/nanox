@@ -1,0 +1,98 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+  - ../base
+
+namePrefix: prod-
+
+replicas:
+  - name: user-service
+    count: 3
+  - name: product-service
+    count: 3
+  - name: cart-service
+    count: 3
+  - name: order-service
+    count: 3
+  - name: payment-service
+    count: 2
+  - name: store-service
+    count: 2
+  - name: api-gateway
+    count: 5
+
+patches:
+  - target:
+      kind: ConfigMap
+      name: ecommerce-config
+    patch: |-
+      - op: replace
+        path: /data/ENVIRONMENT
+        value: "production"
+      - op: replace
+        path: /data/DEBUG
+        value: "false"
+      - op: replace
+        path: /data/LOG_LEVEL
+        value: "INFO"
+
+  - target:
+      kind: Deployment
+      name: postgres
+    patch: |-
+      - op: replace
+        path: /spec/template/spec/containers/0/resources/requests/memory
+        value: "1Gi"
+      - op: replace
+        path: /spec/template/spec/containers/0/resources/limits/memory
+        value: "4Gi"
+      - op: replace
+        path: /spec/template/spec/containers/0/resources/requests/cpu
+        value: "500m"
+      - op: replace
+        path: /spec/template/spec/containers/0/resources/limits/cpu
+        value: "2000m"
+
+  - target:
+      kind: PersistentVolumeClaim
+      name: postgres-pvc
+    patch: |-
+      - op: replace
+        path: /spec/resources/requests/storage
+        value: "100Gi"
+
+  # Production-specific resource limits
+  - target:
+      kind: Deployment
+      labelSelector: "app in (user-service,product-service,cart-service,order-service,payment-service,store-service)"
+    patch: |-
+      - op: replace
+        path: /spec/template/spec/containers/0/resources/requests/memory
+        value: "256Mi"
+      - op: replace
+        path: /spec/template/spec/containers/0/resources/limits/memory
+        value: "1Gi"
+      - op: replace
+        path: /spec/template/spec/containers/0/resources/requests/cpu
+        value: "200m"
+      - op: replace
+        path: /spec/template/spec/containers/0/resources/limits/cpu
+        value: "1000m"
+
+  - target:
+      kind: Deployment
+      name: api-gateway
+    patch: |-
+      - op: replace
+        path: /spec/template/spec/containers/0/resources/requests/memory
+        value: "512Mi"
+      - op: replace
+        path: /spec/template/spec/containers/0/resources/limits/memory
+        value: "2Gi"
+      - op: replace
+        path: /spec/template/spec/containers/0/resources/requests/cpu
+        value: "500m"
+      - op: replace
+        path: /spec/template/spec/containers/0/resources/limits/cpu
+        value: "2000m"

@@ -1,0 +1,209 @@
+syntax = "proto3";
+
+package order;
+
+option go_package = "./order";
+
+// 订单服务定义
+service OrderService {
+  // 创建订单
+  rpc CreateOrder(CreateOrderRequest) returns (CreateOrderResponse);
+  // 获取订单详情
+  rpc GetOrder(GetOrderRequest) returns (GetOrderResponse);
+  // 获取用户订单列表
+  rpc GetUserOrders(GetUserOrdersRequest) returns (GetUserOrdersResponse);
+  // 获取店铺订单列表
+  rpc GetStoreOrders(GetStoreOrdersRequest) returns (GetStoreOrdersResponse);
+  // 更新订单状态
+  rpc UpdateOrderStatus(UpdateOrderStatusRequest) returns (UpdateOrderStatusResponse);
+  // 取消订单
+  rpc CancelOrder(CancelOrderRequest) returns (CancelOrderResponse);
+  // 确认收货
+  rpc ConfirmOrder(ConfirmOrderRequest) returns (ConfirmOrderResponse);
+  // 添加物流信息
+  rpc AddShipping(AddShippingRequest) returns (AddShippingResponse);
+}
+
+// 订单状态枚举
+enum OrderStatus {
+  PENDING = 0;        // 待付款
+  PAID = 1;           // 已付款
+  SHIPPED = 2;        // 已发货
+  DELIVERED = 3;      // 已送达
+  COMPLETED = 4;      // 已完成
+  CANCELLED = 5;      // 已取消
+  REFUNDED = 6;       // 已退款
+}
+
+// 订单商品项
+message OrderItem {
+  int64 id = 1;
+  int64 order_id = 2;
+  int64 product_id = 3;
+  string product_name = 4;
+  string product_image = 5;
+  int32 quantity = 6;
+  int64 price = 7; // 商品单价
+  int64 total_price = 8; // 商品总价
+  map<string, string> product_attributes = 9;
+}
+
+// 收货地址
+message OrderAddress {
+  string name = 1;
+  string phone = 2;
+  string province = 3;
+  string city = 4;
+  string district = 5;
+  string detail = 6;
+  string postal_code = 7;
+}
+
+// 物流信息
+message ShippingInfo {
+  string company = 1; // 物流公司
+  string tracking_number = 2; // 快递单号
+  string status = 3; // 物流状态
+  int64 shipped_at = 4; // 发货时间
+  int64 delivered_at = 5; // 送达时间
+}
+
+// 订单信息
+message Order {
+  int64 id = 1;
+  string order_no = 2; // 订单号
+  int64 user_id = 3;
+  int64 store_id = 4;
+  OrderStatus status = 5;
+  repeated OrderItem items = 6;
+  OrderAddress address = 7;
+  int64 subtotal = 8; // 商品总价
+  int64 shipping_fee = 9; // 运费
+  int64 total_amount = 10; // 订单总金额
+  string payment_method = 11; // 支付方式
+  string payment_id = 12; // 支付流水号
+  ShippingInfo shipping = 13; // 物流信息
+  string remark = 14; // 订单备注
+  int64 created_at = 15;
+  int64 updated_at = 16;
+  int64 paid_at = 17; // 付款时间
+  int64 shipped_at = 18; // 发货时间
+  int64 completed_at = 19; // 完成时间
+}
+
+// 创建订单请求
+message CreateOrderRequest {
+  int64 user_id = 1;
+  int64 store_id = 2;
+  repeated OrderItemRequest items = 3;
+  OrderAddress address = 4;
+  string payment_method = 5;
+  string remark = 6;
+}
+
+message OrderItemRequest {
+  int64 product_id = 1;
+  int32 quantity = 2;
+}
+
+message CreateOrderResponse {
+  bool success = 1;
+  string message = 2;
+  Order order = 3;
+}
+
+// 获取订单请求
+message GetOrderRequest {
+  int64 order_id = 1;
+  int64 user_id = 2; // 可选，用于权限验证
+}
+
+message GetOrderResponse {
+  bool success = 1;
+  string message = 2;
+  Order order = 3;
+}
+
+// 获取用户订单列表请求
+message GetUserOrdersRequest {
+  int64 user_id = 1;
+  OrderStatus status = 2; // 可选，筛选状态
+  int32 page = 3;
+  int32 page_size = 4;
+}
+
+message GetUserOrdersResponse {
+  bool success = 1;
+  string message = 2;
+  repeated Order orders = 3;
+  int32 total = 4;
+  int32 page = 5;
+  int32 page_size = 6;
+}
+
+// 获取店铺订单列表请求
+message GetStoreOrdersRequest {
+  int64 store_id = 1;
+  OrderStatus status = 2; // 可选，筛选状态
+  int32 page = 3;
+  int32 page_size = 4;
+}
+
+message GetStoreOrdersResponse {
+  bool success = 1;
+  string message = 2;
+  repeated Order orders = 3;
+  int32 total = 4;
+  int32 page = 5;
+  int32 page_size = 6;
+}
+
+// 更新订单状态请求
+message UpdateOrderStatusRequest {
+  int64 order_id = 1;
+  OrderStatus status = 2;
+  int64 operator_id = 3; // 操作人ID
+  string reason = 4; // 操作原因
+}
+
+message UpdateOrderStatusResponse {
+  bool success = 1;
+  string message = 2;
+  Order order = 3;
+}
+
+// 取消订单请求
+message CancelOrderRequest {
+  int64 order_id = 1;
+  int64 user_id = 2;
+  string reason = 3;
+}
+
+message CancelOrderResponse {
+  bool success = 1;
+  string message = 2;
+}
+
+// 确认收货请求
+message ConfirmOrderRequest {
+  int64 order_id = 1;
+  int64 user_id = 2;
+}
+
+message ConfirmOrderResponse {
+  bool success = 1;
+  string message = 2;
+}
+
+// 添加物流信息请求
+message AddShippingRequest {
+  int64 order_id = 1;
+  int64 store_id = 2;
+  string company = 3;
+  string tracking_number = 4;
+}
+
+message AddShippingResponse {
+  bool success = 1;
+  string message = 2;
+}

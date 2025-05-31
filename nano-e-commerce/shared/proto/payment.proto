@@ -1,0 +1,143 @@
+syntax = "proto3";
+
+package payment;
+
+option go_package = "./payment";
+
+// 支付服务定义
+service PaymentService {
+  // 创建支付
+  rpc CreatePayment(CreatePaymentRequest) returns (CreatePaymentResponse);
+  // 查询支付状态
+  rpc GetPayment(GetPaymentRequest) returns (GetPaymentResponse);
+  // 支付回调处理
+  rpc PaymentCallback(PaymentCallbackRequest) returns (PaymentCallbackResponse);
+  // 申请退款
+  rpc CreateRefund(CreateRefundRequest) returns (CreateRefundResponse);
+  // 查询退款状态
+  rpc GetRefund(GetRefundRequest) returns (GetRefundResponse);
+}
+
+// 支付状态枚举
+enum PaymentStatus {
+  PENDING = 0;    // 待支付
+  SUCCESS = 1;    // 支付成功
+  FAILED = 2;     // 支付失败
+  CANCELLED = 3;  // 已取消
+  REFUNDED = 4;   // 已退款
+}
+
+// 支付方式枚举
+enum PaymentMethod {
+  ALIPAY = 0;     // 支付宝
+  WECHAT = 1;     // 微信支付
+  BANK_CARD = 2;  // 银行卡
+  CREDIT_CARD = 3; // 信用卡
+}
+
+// 支付信息
+message Payment {
+  int64 id = 1;
+  string payment_id = 2; // 支付流水号
+  int64 order_id = 3;
+  int64 user_id = 4;
+  int64 amount = 5; // 支付金额，单位：分
+  PaymentMethod method = 6;
+  PaymentStatus status = 7;
+  string third_party_id = 8; // 第三方支付流水号
+  string third_party_response = 9; // 第三方响应
+  int64 created_at = 10;
+  int64 updated_at = 11;
+  int64 paid_at = 12; // 支付完成时间
+}
+
+// 退款信息
+message Refund {
+  int64 id = 1;
+  string refund_id = 2; // 退款流水号
+  int64 payment_id = 3;
+  int64 order_id = 4;
+  int64 user_id = 5;
+  int64 amount = 6; // 退款金额，单位：分
+  PaymentStatus status = 7;
+  string reason = 8; // 退款原因
+  string third_party_refund_id = 9; // 第三方退款流水号
+  int64 created_at = 10;
+  int64 updated_at = 11;
+  int64 refunded_at = 12; // 退款完成时间
+}
+
+// 创建支付请求
+message CreatePaymentRequest {
+  int64 order_id = 1;
+  int64 user_id = 2;
+  int64 amount = 3;
+  PaymentMethod method = 4;
+  string return_url = 5; // 支付成功返回地址
+  string notify_url = 6; // 支付结果通知地址
+}
+
+message CreatePaymentResponse {
+  bool success = 1;
+  string message = 2;
+  Payment payment = 3;
+  string pay_url = 4; // 支付链接
+  string qr_code = 5; // 二维码（如适用）
+}
+
+// 查询支付请求
+message GetPaymentRequest {
+  oneof identifier {
+    int64 payment_id = 1;
+    string payment_no = 2;
+    int64 order_id = 3;
+  }
+}
+
+message GetPaymentResponse {
+  bool success = 1;
+  string message = 2;
+  Payment payment = 3;
+}
+
+// 支付回调请求
+message PaymentCallbackRequest {
+  PaymentMethod method = 1;
+  string third_party_data = 2; // 第三方支付回调数据
+}
+
+message PaymentCallbackResponse {
+  bool success = 1;
+  string message = 2;
+  string response_data = 3; // 返回给第三方的响应数据
+}
+
+// 创建退款请求
+message CreateRefundRequest {
+  int64 payment_id = 1;
+  int64 order_id = 2;
+  int64 user_id = 3;
+  int64 amount = 4; // 退款金额
+  string reason = 5;
+}
+
+message CreateRefundResponse {
+  bool success = 1;
+  string message = 2;
+  Refund refund = 3;
+}
+
+// 查询退款请求
+message GetRefundRequest {
+  oneof identifier {
+    int64 refund_id = 1;
+    string refund_no = 2;
+    int64 order_id = 3;
+  }
+}
+
+message GetRefundResponse {
+  bool success = 1;
+  string message = 2;
+  Refund refund = 3;
+}

@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: nano-ecommerce
+  labels:
+    name: nano-ecommerce
+    app: nano-ecommerce-platform

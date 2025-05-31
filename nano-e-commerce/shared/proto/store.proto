@@ -1,0 +1,179 @@
+syntax = "proto3";
+
+package store;
+
+option go_package = "./store";
+
+// 店铺服务定义
+service StoreService {
+  // 创建店铺
+  rpc CreateStore(CreateStoreRequest) returns (CreateStoreResponse);
+  // 获取店铺信息
+  rpc GetStore(GetStoreRequest) returns (GetStoreResponse);
+  // 更新店铺信息
+  rpc UpdateStore(UpdateStoreRequest) returns (UpdateStoreResponse);
+  // 获取用户的店铺列表
+  rpc GetUserStores(GetUserStoresRequest) returns (GetUserStoresResponse);
+  // 店铺状态管理
+  rpc UpdateStoreStatus(UpdateStoreStatusRequest) returns (UpdateStoreStatusResponse);
+  
+  // 店铺统计
+  rpc GetStoreStats(GetStoreStatsRequest) returns (GetStoreStatsResponse);
+  // 获取店铺商品列表
+  rpc GetStoreProducts(GetStoreProductsRequest) returns (GetStoreProductsResponse);
+}
+
+// 店铺状态枚举
+enum StoreStatus {
+  PENDING = 0;    // 待审核
+  ACTIVE = 1;     // 正常营业
+  SUSPENDED = 2;  // 暂停营业
+  CLOSED = 3;     // 已关闭
+}
+
+// 店铺信息
+message Store {
+  int64 id = 1;
+  string name = 2;
+  string description = 3;
+  int64 owner_id = 4; // 店主用户ID
+  string logo = 5;
+  string banner = 6;
+  StoreStatus status = 7;
+  string phone = 8;
+  string email = 9;
+  string address = 10;
+  string business_license = 11; // 营业执照
+  string business_hours = 12; // 营业时间
+  map<string, string> settings = 13; // 店铺设置
+  int64 created_at = 14;
+  int64 updated_at = 15;
+}
+
+// 店铺统计信息
+message StoreStats {
+  int64 store_id = 1;
+  int32 total_products = 2; // 商品总数
+  int32 active_products = 3; // 在售商品数
+  int32 total_orders = 4; // 订单总数
+  int32 pending_orders = 5; // 待处理订单数
+  int64 total_revenue = 6; // 总收入
+  int64 monthly_revenue = 7; // 本月收入
+  int32 total_customers = 8; // 客户总数
+  float avg_rating = 9; // 平均评分
+  int64 updated_at = 10;
+}
+
+// 创建店铺请求
+message CreateStoreRequest {
+  string name = 1;
+  string description = 2;
+  int64 owner_id = 3;
+  string phone = 4;
+  string email = 5;
+  string address = 6;
+  string business_license = 7;
+}
+
+message CreateStoreResponse {
+  bool success = 1;
+  string message = 2;
+  Store store = 3;
+}
+
+// 获取店铺请求
+message GetStoreRequest {
+  int64 store_id = 1;
+}
+
+message GetStoreResponse {
+  bool success = 1;
+  string message = 2;
+  Store store = 3;
+}
+
+// 更新店铺请求
+message UpdateStoreRequest {
+  int64 store_id = 1;
+  int64 owner_id = 2; // 用于权限验证
+  string name = 3;
+  string description = 4;
+  string logo = 5;
+  string banner = 6;
+  string phone = 7;
+  string email = 8;
+  string address = 9;
+  string business_hours = 10;
+  map<string, string> settings = 11;
+}
+
+message UpdateStoreResponse {
+  bool success = 1;
+  string message = 2;
+  Store store = 3;
+}
+
+// 获取用户店铺列表请求
+message GetUserStoresRequest {
+  int64 user_id = 1;
+  StoreStatus status = 2; // 可选，筛选状态
+}
+
+message GetUserStoresResponse {
+  bool success = 1;
+  string message = 2;
+  repeated Store stores = 3;
+}
+
+// 更新店铺状态请求
+message UpdateStoreStatusRequest {
+  int64 store_id = 1;
+  StoreStatus status = 2;
+  int64 operator_id = 3; // 操作人ID
+  string reason = 4; // 操作原因
+}
+
+message UpdateStoreStatusResponse {
+  bool success = 1;
+  string message = 2;
+}
+
+// 获取店铺统计请求
+message GetStoreStatsRequest {
+  int64 store_id = 1;
+  int64 owner_id = 2; // 用于权限验证
+}
+
+message GetStoreStatsResponse {
+  bool success = 1;
+  string message = 2;
+  StoreStats stats = 3;
+}
+
+// 获取店铺商品列表请求
+message GetStoreProductsRequest {
+  int64 store_id = 1;
+  string status = 2; // 可选，筛选状态
+  int32 page = 3;
+  int32 page_size = 4;
+}
+
+message GetStoreProductsResponse {
+  bool success = 1;
+  string message = 2;
+  repeated StoreProduct products = 3;
+  int32 total = 4;
+  int32 page = 5;
+  int32 page_size = 6;
+}
+
+// 店铺商品信息（简化版）
+message StoreProduct {
+  int64 id = 1;
+  string name = 2;
+  int64 price = 3;
+  int32 stock = 4;
+  string status = 5;
+  string image = 6;
+  int64 created_at = 7;
+}

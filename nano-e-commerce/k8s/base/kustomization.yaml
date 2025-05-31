@@ -1,0 +1,48 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+  - namespace.yaml
+  - configmap.yaml
+  - postgres.yaml
+  - redis.yaml
+  - microservices-1.yaml
+  - microservices-2.yaml
+  - api-gateway.yaml
+  - monitoring.yaml
+
+commonLabels:
+  project: nano-ecommerce
+  version: v1.0.0
+
+images:
+  - name: nano-ecommerce/user-service
+    newTag: latest
+  - name: nano-ecommerce/product-service
+    newTag: latest
+  - name: nano-ecommerce/cart-service
+    newTag: latest
+  - name: nano-ecommerce/order-service
+    newTag: latest
+  - name: nano-ecommerce/payment-service
+    newTag: latest
+  - name: nano-ecommerce/store-service
+    newTag: latest
+  - name: nano-ecommerce/api-gateway
+    newTag: latest
+
+replicas:
+  - name: user-service
+    count: 2
+  - name: product-service
+    count: 2
+  - name: cart-service
+    count: 2
+  - name: order-service
+    count: 2
+  - name: payment-service
+    count: 2
+  - name: store-service
+    count: 2
+  - name: api-gateway
+    count: 3

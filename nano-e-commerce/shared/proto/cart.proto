@@ -1,0 +1,113 @@
+syntax = "proto3";
+
+package cart;
+
+option go_package = "./cart";
+
+// 购物车服务定义
+service CartService {
+  // 添加商品到购物车
+  rpc AddItem(AddItemRequest) returns (AddItemResponse);
+  // 更新购物车商品数量
+  rpc UpdateItem(UpdateItemRequest) returns (UpdateItemResponse);
+  // 从购物车移除商品
+  rpc RemoveItem(RemoveItemRequest) returns (RemoveItemResponse);
+  // 获取购物车详情
+  rpc GetCart(GetCartRequest) returns (GetCartResponse);
+  // 清空购物车
+  rpc ClearCart(ClearCartRequest) returns (ClearCartResponse);
+  // 获取购物车商品数量
+  rpc GetCartCount(GetCartCountRequest) returns (GetCartCountResponse);
+}
+
+// 购物车商品项
+message CartItem {
+  int64 id = 1;
+  int64 user_id = 2;
+  int64 product_id = 3;
+  int32 quantity = 4;
+  int64 price = 5; // 加入购物车时的价格
+  string product_name = 6;
+  string product_image = 7;
+  bool selected = 8; // 是否选中结算
+  int64 created_at = 9;
+  int64 updated_at = 10;
+}
+
+// 购物车详情
+message Cart {
+  int64 user_id = 1;
+  repeated CartItem items = 2;
+  int32 total_count = 3;
+  int64 total_amount = 4; // 选中商品的总金额
+  int64 total_selected_count = 5; // 选中商品数量
+}
+
+// 添加商品请求
+message AddItemRequest {
+  int64 user_id = 1;
+  int64 product_id = 2;
+  int32 quantity = 3;
+}
+
+message AddItemResponse {
+  bool success = 1;
+  string message = 2;
+  CartItem item = 3;
+}
+
+// 更新商品数量请求
+message UpdateItemRequest {
+  int64 user_id = 1;
+  int64 product_id = 2;
+  int32 quantity = 3;
+  bool selected = 4;
+}
+
+message UpdateItemResponse {
+  bool success = 1;
+  string message = 2;
+  CartItem item = 3;
+}
+
+// 移除商品请求
+message RemoveItemRequest {
+  int64 user_id = 1;
+  int64 product_id = 2;
+}
+
+message RemoveItemResponse {
+  bool success = 1;
+  string message = 2;
+}
+
+// 获取购物车请求
+message GetCartRequest {
+  int64 user_id = 1;
+}
+
+message GetCartResponse {
+  bool success = 1;
+  string message = 2;
+  Cart cart = 3;
+}
+
+// 清空购物车请求
+message ClearCartRequest {
+  int64 user_id = 1;
+}
+
+message ClearCartResponse {
+  bool success = 1;
+  string message = 2;
+}
+
+// 获取购物车商品数量请求
+message GetCartCountRequest {
+  int64 user_id = 1;
+}
+
+message GetCartCountResponse {
+  bool success = 1;
+  int32 count = 2;
+}

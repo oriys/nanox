@@ -1,0 +1,271 @@
+# Cart Service
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cart-service
+  namespace: nano-ecommerce
+  labels:
+    app: cart-service
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: cart-service
+  template:
+    metadata:
+      labels:
+        app: cart-service
+    spec:
+      containers:
+      - name: cart-service
+        image: nano-ecommerce/cart-service:latest
+        ports:
+        - containerPort: 50053
+          name: grpc
+        - containerPort: 8003
+          name: http
+        envFrom:
+        - configMapRef:
+            name: ecommerce-config
+        - secretRef:
+            name: ecommerce-secrets
+        readinessProbe:
+          grpc:
+            port: 50053
+          initialDelaySeconds: 10
+          periodSeconds: 5
+        livenessProbe:
+          grpc:
+            port: 50053
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "100m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: cart-service
+  namespace: nano-ecommerce
+  labels:
+    app: cart-service
+spec:
+  ports:
+  - port: 50053
+    targetPort: 50053
+    name: grpc
+  - port: 8003
+    targetPort: 8003
+    name: http
+  selector:
+    app: cart-service
+  type: ClusterIP
+---
+# Order Service
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: order-service
+  namespace: nano-ecommerce
+  labels:
+    app: order-service
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: order-service
+  template:
+    metadata:
+      labels:
+        app: order-service
+    spec:
+      containers:
+      - name: order-service
+        image: nano-ecommerce/order-service:latest
+        ports:
+        - containerPort: 50054
+          name: grpc
+        - containerPort: 8004
+          name: http
+        envFrom:
+        - configMapRef:
+            name: ecommerce-config
+        - secretRef:
+            name: ecommerce-secrets
+        readinessProbe:
+          grpc:
+            port: 50054
+          initialDelaySeconds: 10
+          periodSeconds: 5
+        livenessProbe:
+          grpc:
+            port: 50054
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "100m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: order-service
+  namespace: nano-ecommerce
+  labels:
+    app: order-service
+spec:
+  ports:
+  - port: 50054
+    targetPort: 50054
+    name: grpc
+  - port: 8004
+    targetPort: 8004
+    name: http
+  selector:
+    app: order-service
+  type: ClusterIP
+---
+# Payment Service
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: payment-service
+  namespace: nano-ecommerce
+  labels:
+    app: payment-service
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: payment-service
+  template:
+    metadata:
+      labels:
+        app: payment-service
+    spec:
+      containers:
+      - name: payment-service
+        image: nano-ecommerce/payment-service:latest
+        ports:
+        - containerPort: 50055
+          name: grpc
+        - containerPort: 8005
+          name: http
+        envFrom:
+        - configMapRef:
+            name: ecommerce-config
+        - secretRef:
+            name: ecommerce-secrets
+        readinessProbe:
+          grpc:
+            port: 50055
+          initialDelaySeconds: 10
+          periodSeconds: 5
+        livenessProbe:
+          grpc:
+            port: 50055
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "100m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: payment-service
+  namespace: nano-ecommerce
+  labels:
+    app: payment-service
+spec:
+  ports:
+  - port: 50055
+    targetPort: 50055
+    name: grpc
+  - port: 8005
+    targetPort: 8005
+    name: http
+  selector:
+    app: payment-service
+  type: ClusterIP
+---
+# Store Service
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: store-service
+  namespace: nano-ecommerce
+  labels:
+    app: store-service
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: store-service
+  template:
+    metadata:
+      labels:
+        app: store-service
+    spec:
+      containers:
+      - name: store-service
+        image: nano-ecommerce/store-service:latest
+        ports:
+        - containerPort: 50056
+          name: grpc
+        - containerPort: 8006
+          name: http
+        envFrom:
+        - configMapRef:
+            name: ecommerce-config
+        - secretRef:
+            name: ecommerce-secrets
+        readinessProbe:
+          grpc:
+            port: 50056
+          initialDelaySeconds: 10
+          periodSeconds: 5
+        livenessProbe:
+          grpc:
+            port: 50056
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "100m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: store-service
+  namespace: nano-ecommerce
+  labels:
+    app: store-service
+spec:
+  ports:
+  - port: 50056
+    targetPort: 50056
+    name: grpc
+  - port: 8006
+    targetPort: 8006
+    name: http
+  selector:
+    app: store-service
+  type: ClusterIP

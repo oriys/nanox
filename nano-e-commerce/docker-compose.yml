@@ -1,0 +1,155 @@
+version: '3.8'
+
+services:
+  # PostgreSQL 数据库
+  postgres:
+    image: postgres:15
+    environment:
+      POSTGRES_DB: ecommerce
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./shared/database/init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - ecommerce-network
+
+  # Redis 缓存和消息队列
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - ecommerce-network
+
+  # 用户服务
+  user-service:
+    build:
+      context: ./services/user-service
+      dockerfile: Dockerfile
+    ports:
+      - "50051:50051"
+    environment:
+      - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/ecommerce
+      - REDIS_URL=redis://redis:6379
+    depends_on:
+      - postgres
+      - redis
+    networks:
+      - ecommerce-network
+
+  # 商品服务
+  product-service:
+    build:
+      context: ./services/product-service
+      dockerfile: Dockerfile
+    ports:
+      - "50052:50052"
+    environment:
+      - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/ecommerce
+      - REDIS_URL=redis://redis:6379
+    depends_on:
+      - postgres
+      - redis
+    networks:
+      - ecommerce-network
+
+  # 购物车服务
+  cart-service:
+    build:
+      context: ./services/cart-service
+      dockerfile: Dockerfile
+    ports:
+      - "50053:50053"
+    environment:
+      - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/ecommerce
+      - REDIS_URL=redis://redis:6379
+    depends_on:
+      - postgres
+      - redis
+    networks:
+      - ecommerce-network
+
+  # 订单服务
+  order-service:
+    build:
+      context: ./services/order-service
+      dockerfile: Dockerfile
+    ports:
+      - "50054:50054"
+    environment:
+      - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/ecommerce
+      - REDIS_URL=redis://redis:6379
+    depends_on:
+      - postgres
+      - redis
+    networks:
+      - ecommerce-network
+
+  # 支付服务
+  payment-service:
+    build:
+      context: ./services/payment-service
+      dockerfile: Dockerfile
+    ports:
+      - "50055:50055"
+    environment:
+      - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/ecommerce
+      - REDIS_URL=redis://redis:6379
+    depends_on:
+      - postgres
+      - redis
+    networks:
+      - ecommerce-network
+
+  # 店铺服务
+  store-service:
+    build:
+      context: ./services/store-service
+      dockerfile: Dockerfile
+    ports:
+      - "50056:50056"
+    environment:
+      - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/ecommerce
+      - REDIS_URL=redis://redis:6379
+    depends_on:
+      - postgres
+      - redis
+    networks:
+      - ecommerce-network
+
+  # API网关
+  api-gateway:
+    build:
+      context: ./services/api-gateway
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      - USER_SERVICE_URL=user-service:50051
+      - PRODUCT_SERVICE_URL=product-service:50052
+      - CART_SERVICE_URL=cart-service:50053
+      - ORDER_SERVICE_URL=order-service:50054
+      - PAYMENT_SERVICE_URL=payment-service:50055
+      - STORE_SERVICE_URL=store-service:50056
+    depends_on:
+      - user-service
+      - product-service
+      - cart-service
+      - order-service
+      - payment-service
+      - store-service
+    networks:
+      - ecommerce-network
+
+volumes:
+  postgres_data:
+  redis_data:
+
+networks:
+  ecommerce-network:
+    driver: bridge
